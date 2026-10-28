@@ -1,0 +1,26 @@
+name: Build APK
+on: [push, workflow_dispatch]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Entpacken
+        run: unzip -q BildBooster.zip
+      - name: Modell einbinden
+        run: |
+          if [ -f upscaler.tflite ]; then cp upscaler.tflite BildBooster/app/src/main/assets/; fi
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 8.7
+      - name: Bauen
+        working-directory: BildBooster
+        run: gradle assembleDebug --no-daemon
+      - uses: actions/upload-artifact@v4
+        with:
+          name: BildBooster-APK
+          path: BildBooster/app/build/outputs/apk/debug/app-debug.apk
